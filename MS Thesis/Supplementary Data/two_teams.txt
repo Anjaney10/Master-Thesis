@@ -1,0 +1,12 @@
+Team A = ['GPX4', 'ERa66', 'HMOX1', 'MIR200A', 'KEAP1', 'CDH1', 'MIR34A', 'AMPK', 'GATA3', 'FOXA1', 'PEBP1', 'MIR145', 'let7']
+Team B = ['ZEB1', 'HIF1A', 'ENO1', 'FASN', 'PDL1', 'ERa36', 'EGFR', 'SNAI2', 'LDHA', 'LIN28A', 'OCT4', 'NFKB1', 'CPT1A', 'BACH1', 'SNAI1', 'PGR', 'G6PD', 'TP63', 'NRF2']
+
+
+          TeamB     TeamA
+TeamB  0.196982 -0.159676
+TeamA -0.271457  0.242881
+
+--- Results ---
+Original Network Strength: 0.1626
+Randomized Networks Strength (1000 valid): Avg ± Std = 0.0107 ± 0.0063
+Empirical p-value (P(Random >= Original)): 0.0010
