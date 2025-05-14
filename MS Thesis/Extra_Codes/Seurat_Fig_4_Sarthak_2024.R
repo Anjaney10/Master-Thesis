@@ -24,7 +24,7 @@ Read10X_uncompressed <- function(data.dir) {
 }
 
 # Create Seurat object for GSE176078
-data_dir_gse176078 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE176078_RAW/"
+data_dir_gse176078 <- "./Transcriptomics/Sarthak_2024/GSE176078_RAW/"
 subfolders_gse176078 <- list.dirs(data_dir_gse176078, full.names = TRUE, recursive = FALSE)
 
 seurat_list_gse176078 <- lapply(subfolders_gse176078, function(folder) {
@@ -35,16 +35,16 @@ seurat_list_gse176078 <- lapply(subfolders_gse176078, function(folder) {
 seurat_gse176078 <- merge(seurat_list_gse176078[[1]], y = seurat_list_gse176078[-1], add.cell.ids = basename(subfolders_gse176078))
 
 # Create Seurat object for GSE173634
-data_dir_gse173634 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE173634_RAW/"
+data_dir_gse173634 <- "./Transcriptomics/Sarthak_2024/GSE173634_RAW/"
 data_gse173634 <- Read10X_uncompressed(data.dir = data_dir_gse173634)
 seurat_gse173634 <- CreateSeuratObject(counts = data_gse173634)
 
 # Normalize and scale the data for both datasets
-# seurat_gse176078 <- NormalizeData(seurat_gse176078)
-# seurat_gse176078 <- ScaleData(seurat_gse176078)
+seurat_gse176078 <- NormalizeData(seurat_gse176078)
+seurat_gse176078 <- ScaleData(seurat_gse176078)
 
-# seurat_gse173634 <- NormalizeData(seurat_gse173634)
-# seurat_gse173634 <- ScaleData(seurat_gse173634)
+seurat_gse173634 <- NormalizeData(seurat_gse173634)
+seurat_gse173634 <- ScaleData(seurat_gse173634)
 
 ####################
 library(Seurat)
@@ -58,7 +58,7 @@ ensembl_ids <- rownames(seurat_gse173634[["RNA"]])
 # Create an AnnotationHub object
 ah <- AnnotationHub()
 
-# Query for the appropriate ensembledb package based on the species (human in this case)
+# Query for the appropriate ensembledb package based on the species
 edb <- query(ah, pattern = c("EnsDb", "Homo sapiens", "105"))[[1]]
 
 # Map ensembl IDs to gene symbols using the columns function on the EnsDb object
@@ -72,7 +72,6 @@ df <- dplyr::left_join(df, genes, by="ensembl_id")
 
 #replace row names with gene names
 rownames(seurat_gse173634) <- df$gene_name
-
 
 # Compute Scores
 luminal_genes <- c("ERa66", "GATA3", "PGR", "FOXA1")
@@ -88,7 +87,6 @@ seurat_gse173634 <- AddModuleScore(seurat_gse173634, features = list(mesenchymal
 # Function to create panel A (i): Density plot of VIM - CDH1
 plot_panel_A_i <- function(seurat_obj, assay = "RNA") {
     
-    # Assuming VIM is Vimentin and CDH1 is E-cadherin, fetch them if they are not already available in the object
     if(!("VIM" %in% rownames(seurat_obj[[assay]]))) {
         print("VIM gene not found in the dataset, please make sure the gene name is correct")
         return(NULL)
@@ -168,7 +166,7 @@ plot_panel_A_ii_iii <- function(seurat_obj, grouping_var, cell_state_var="cell_s
 # Function to create panel B: Gene-gene correlation heatmap
 plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
     
-    # Define the gene sets based on figure
+    # Define the gene sets
     genes_luminal <- c("FOXA1", "SPDEF", "XBP1", "DLX3","GATA3")
     genes_basal <- c("ZNF552", "TRPS1", "SOX13", "MYB","ZNF652","GRHL2", "BAZ2B")
     genes_epithelial <- c("POU2F3","BATF","DLX6","MAFF","ELK3","ARNTL2")
@@ -205,7 +203,7 @@ plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
            color = colorRampPalette(c("navyblue", "white", "firebrick3"))(100),
            border_color = NA,
             labRow = rownames(correlation_matrix), labCol = rownames(correlation_matrix),
-           margins = c(5,5)) # use pheatmap instead
+           margins = c(5,5))
     
      gc()
     return(NULL)
@@ -244,16 +242,15 @@ plot_panel_D <- function(seurat_obj, grouping_var, assay = "RNA") {
 }
 
 # Main function to orchestrate the analysis and plotting
-# Main function to orchestrate the analysis and plotting
 create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") {
   # make sure that grouping_var is a string
   grouping_var <- as.character(grouping_var)
 
   # 0. Make row names unique and remove empty strings
   gene_names <- rownames(seurat_obj[["RNA"]])
-  gene_names <- gene_names[gene_names != ""] # remove empty names
-  unique_gene_names <- make.unique(gene_names) # make sure names are unique
-  rownames(seurat_obj[["RNA"]]) <- unique_gene_names # apply changes
+  gene_names <- gene_names[gene_names != ""]
+  unique_gene_names <- make.unique(gene_names)
+  rownames(seurat_obj[["RNA"]]) <- unique_gene_names
   
   # 1. Calculate scores
    gc()
@@ -283,7 +280,7 @@ create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") 
     
   # 8. Save panel B
    dev.copy(png,filename=paste0(dataset_name, "_panel_B.png"), width=6, height=6, units="in", res = 300)
-   dev.off() # pheatmap generates plot separately
+   dev.off()
 
   # 9. Panel D
   plot_D <- plot_panel_D(seurat_obj, grouping_var, assay = assay)
@@ -294,25 +291,16 @@ create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") 
     dev.off()
     
   gc()
-  #return plots and object
   return(list(plot_A_i = plot_A_i, plot_A_ii_iii = plot_A_ii_iii, plot_D = plot_D))
 }
 
-# 0. Make row names unique and remove empty names from original object
+# Make row names unique and remove empty names from the original object
 gene_names <- rownames(seurat_gse173634[["RNA"]])
 gene_names <- gene_names[gene_names != ""]
 unique_gene_names <- make.unique(gene_names)
 rownames(seurat_gse173634[["RNA"]]) <- unique_gene_names
 seurat_gse173634 <- seurat_gse173634[rownames(seurat_gse173634) != "", ]
 
-# Subsample object (uncomment to use)
-# seurat_gse173634 <- subsample_seurat(seurat_gse173634, n_cells = 10000)
-
-# # inspect object for counts before normalization
-# print("Counts before normalization:")
-#     print(head(GetAssayData(seurat_gse173634, assay="RNA", layer="counts")))
-#     print("Row names of RNA assay:")
-#     print(head(rownames(seurat_gse173634[["RNA"]])))
 
 # Process and plot for GSE173634
 plots_173634 <- create_plots(seurat_obj = seurat_gse173634, dataset_name = "GSE173634", grouping_var = "orig.ident", assay = "RNA")
