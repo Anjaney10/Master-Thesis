@@ -24,7 +24,7 @@ Read10X_uncompressed <- function(data.dir) {
 }
 
 # # Create Seurat object for GSE176078
-# data_dir_gse176078 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE176078_RAW/"
+# data_dir_gse176078 <- "./Transcriptomics/Sarthak_2024/GSE176078_RAW/"
 # subfolders_gse176078 <- list.dirs(data_dir_gse176078, full.names = TRUE, recursive = FALSE)
 
 # seurat_list_gse176078 <- lapply(subfolders_gse176078, function(folder) {
@@ -35,7 +35,7 @@ Read10X_uncompressed <- function(data.dir) {
 # seurat_gse176078 <- merge(seurat_list_gse176078[[1]], y = seurat_list_gse176078[-1], add.cell.ids = basename(subfolders_gse176078))
 
 # # Create Seurat object for GSE173634
-# data_dir_gse173634 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE173634_RAW/"
+# data_dir_gse173634 <- "./Transcriptomics/Sarthak_2024/GSE173634_RAW/"
 # subfolders_gse173634 <- list.dirs(data_dir_gse173634, full.names = TRUE, recursive = FALSE)
 
 # seurat_list_gse173634 <- lapply(subfolders_gse173634, function(folder) {
@@ -46,7 +46,7 @@ Read10X_uncompressed <- function(data.dir) {
 # seurat_gse173634 <- merge(seurat_list_gse173634[[1]], y = seurat_list_gse173634[-1], add.cell.ids = basename(subfolders_gse173634))
 
 # Path to the directory containing your sample subfolders
-data_dir_gse173634 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE173634_RAW/"
+data_dir_gse173634 <- "./Transcriptomics/Sarthak_2024/GSE173634_RAW/"
 sample_subfolders <- list.dirs(data_dir_gse173634, full.names = TRUE, recursive = FALSE)
 
 # Define the metadata mapping (you can also read this from a file)
@@ -66,7 +66,7 @@ for (folder in sample_subfolders) {
   # Extract sample name from folder name
   sample_name <- basename(folder)
 
-  # Create Seurat object without metadata
+  # Create a Seurat object without metadata
   seurat_obj <- CreateSeuratObject(counts = data, project = sample_name)
 
   # Store the Seurat object in the list
@@ -79,42 +79,38 @@ seurat_gse173634 <- merge(seurat_objects_list[[1]],
                           add.cell.ids = names(seurat_objects_list),
                           project = "GSE173634")
 
-# Rename layers (assuming only "counts" and "data" exist before merging)
+# Rename layers
 #current.layers <- names(seurat_gse173634@assays[[DefaultAssay(seurat_gse173634)]]@layers)
 #counts.layers <- grep("^counts", current.layers, value = TRUE)
 
-# Rename only if the layer names follow the pattern identified
 #if (length(counts.layers) > 0) {
 #  names(seurat_gse173634@assays[[DefaultAssay(seurat_gse173634)]]@layers)[match(counts.layers, names(seurat_gse173634@assays[[DefaultAssay(seurat_gse173634)]]@layers))] <- "counts"
 #}
 
 # Add metadata after merging
-# Extract sample names from barcodes in the merged object
 barcode_names <- colnames(seurat_gse173634)
 sample_names_from_barcodes <- sub("_.+", "", barcode_names)
 
 # Create metadata for the merged object
 merged_metadata <- data.frame(
-  row.names = barcode_names, # Set row names as barcodes
+  row.names = barcode_names,
   barcode = barcode_names,
   sample = sample_names_from_barcodes
 )
 
 # Merge with the metadata mapping
 merged_metadata <- merge(merged_metadata, metadata_mapping, by = "sample", all.x = TRUE)
-
-# Ensure row names are preserved
 rownames(merged_metadata) <- merged_metadata$barcode
 
-# Reorder metadata rows to match the order of cells in the Seurat object
+# Reorder metadata rows
 merged_metadata <- merged_metadata[colnames(seurat_gse173634), ]
 
-# Add metadata to the merged Seurat object
+# Add metadata
 seurat_gse173634 <- AddMetaData(seurat_gse173634, metadata = merged_metadata)
 
 # Normalize and scale the data for both datasets
-# seurat_gse176078 <- NormalizeData(seurat_gse176078)
-# seurat_gse176078 <- ScaleData(seurat_gse176078)
+seurat_gse176078 <- NormalizeData(seurat_gse176078)
+seurat_gse176078 <- ScaleData(seurat_gse176078)
 
 seurat_gse173634 <- NormalizeData(seurat_gse173634)
 seurat_gse173634 <- ScaleData(object = seurat_gse173634, features = rownames(seurat_gse173634), 
@@ -122,13 +118,13 @@ seurat_gse173634 <- ScaleData(object = seurat_gse173634, features = rownames(seu
                               block.size = 100, verbose =  TRUE)
 ####################
 ####################
-# Compute Scores (Corrected for Seurat v5)
+# Compute Scores 
 luminal_genes <- c("ESR1", "GATA3", "PGR", "FOXA1")
 basal_genes <- c("TP63", "SNAI1")
 epithelial_genes <- c("CDH1", "MIR200C")
 mesenchymal_genes <- c("ZEB1", "SNAI1")
 
-# Function to calculate scores (Corrected for Seurat v5)
+# Function to calculate scores 
 calculate_scores_manual <- function(seurat_obj, assay = "RNA") {
   luminal_genes <- c("ESR1", "GATA3", "PGR", "FOXA1")
   basal_genes <- c("TP63", "SNAI1")
@@ -147,7 +143,7 @@ calculate_scores_manual <- function(seurat_obj, assay = "RNA") {
   return(seurat_obj)
 }
 
-# Function to create panel A (i): Density plot of VIM - CDH1 (Corrected for Seurat v5)
+# Function to create panel A (i): Density plot of VIM - CDH1
 plot_panel_A_i <- function(seurat_obj, assay = "RNA") {
   if(!("VIM" %in% rownames(seurat_obj[[assay]]))) {
     print("VIM gene not found in the dataset, please make sure the gene name is correct")
@@ -175,7 +171,7 @@ plot_panel_A_i <- function(seurat_obj, assay = "RNA") {
   return(p)
 }
 
-# Function to classify cells into epithelial, hybrid, and mesenchymal states (Corrected for Seurat v5)
+# Function to classify cells into epithelial, hybrid, and mesenchymal states 
 classify_cells <- function(seurat_obj, assay = "RNA") {
   if(!("VIM" %in% rownames(seurat_obj[[assay]]))) {
     print("VIM gene not found in the dataset, please make sure the gene name is correct")
@@ -196,7 +192,7 @@ classify_cells <- function(seurat_obj, assay = "RNA") {
   return(seurat_obj)
 }
 
-# Function to create panel A (ii) and (iii): Stacked bar plots (Corrected for Seurat v5)
+# Function to create panel A (ii) and (iii): Stacked bar plots 
 plot_panel_A_ii_iii <- function(seurat_obj, grouping_var, cell_state_var = "cell_state") {
   if(is.null(seurat_obj[[grouping_var]])) {
     print("Grouping variable not found in the object metadata, please make sure it is correct")
@@ -223,9 +219,9 @@ plot_panel_A_ii_iii <- function(seurat_obj, grouping_var, cell_state_var = "cell
   return(plot)
 }
 
-# Function to create panel B: Gene-gene correlation heatmap (Corrected for Seurat v5)
+# Function to create panel B: Gene-gene correlation heatmap 
 plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
-  # Define the gene sets based on figure
+  # Define the gene sets
   genes_luminal <- c("FOXA1", "SPDEF", "XBP1", "DLX3", "GATA3")
   genes_basal <- c("ZNF552", "TRPS1", "SOX13", "MYB", "ZNF652", "GRHL2", "BAZ2B")
   genes_epithelial <- c("POU2F3", "BATF", "DLX6", "MAFF", "ELK3", "ARNTL2")
@@ -252,7 +248,7 @@ plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
   # Check for NA values and handle them
   if (any(is.na(filtered_data))) {
     print("Warning: NA values found in filtered_data. Replacing with 0.")
-    filtered_data[is.na(filtered_data)] <- 0 # Replace NA with 0 or handle as appropriate
+    filtered_data[is.na(filtered_data)] <- 0
   }
   
   # Check if there are enough genes for correlation calculation
@@ -264,7 +260,7 @@ plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
   # Calculate correlation matrix
   correlation_matrix <- cor(t(filtered_data))
   
-  # Check if correlation matrix is valid for pheatmap
+  # Check if the correlation matrix is valid for pheatmap
   if(nrow(correlation_matrix) < 2 || ncol(correlation_matrix) < 2) {
     print("Error: Correlation matrix has dimensions less than 2x2, which is not suitable for pheatmap.")
     return(NULL)
@@ -294,7 +290,7 @@ plot_panel_B <- function(seurat_obj, top_n = 20, assay = "RNA") {
   return(NULL)
 }
 
-# Function to create panel D: Scatter plot of cells on 2D epithelial-mesenchymal and luminal-basal space (Corrected for Seurat v5)
+# Function to create panel D: Scatter plot of cells on 2D epithelial-mesenchymal and luminal-basal space 
 plot_panel_D <- function(seurat_obj, grouping_var, assay = "RNA") {
   if(is.null(seurat_obj[[grouping_var]])) {
     print("Grouping variable not found in the object metadata, please make sure it is correct")
@@ -325,18 +321,16 @@ plot_panel_D <- function(seurat_obj, grouping_var, assay = "RNA") {
   })
 }
 
-# Main function to orchestrate the analysis and plotting (Corrected for Seurat v5)
+# Main function to orchestrate the analysis and plotting 
 create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") {
-  # Make sure that grouping_var is a string
   grouping_var <- as.character(grouping_var)
   
-  # Ensure necessary columns are present before proceeding
   if (!all(c("Mesenchymal1", "Epithelial1", "Basal1", "Luminal1") %in% colnames(seurat_obj@meta.data))) {
     print("Required module scores not found in metadata. Running calculate_scores to add them.")
     seurat_obj <- calculate_scores(seurat_obj, assay = assay)
   }
   
-  # Classify cells - ensure this happens after score calculation
+  # Classify cells
   seurat_obj <- classify_cells(seurat_obj, assay = assay)
   
   # Panel A (i)
@@ -360,9 +354,9 @@ create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") 
   }
   
   # Panel B
-  # plot_panel_B(seurat_obj, assay = assay)
-  # dev.copy(png, filename = paste0(dataset_name, "_panel_B.png"), width = 6, height = 6, units = "in", res = 300)
-  # dev.off()
+  plot_panel_B(seurat_obj, assay = assay)
+  dev.copy(png, filename = paste0(dataset_name, "_panel_B.png"), width = 6, height = 6, units = "in", res = 300)
+  dev.off()
   
   # Panel D
   plot_D <- plot_panel_D(seurat_obj, grouping_var, assay = assay)
@@ -378,7 +372,6 @@ create_plots <- function(seurat_obj, dataset_name, grouping_var, assay = "RNA") 
   return(list(plot_A_i = plot_A_i, plot_A_ii_iii = plot_A_ii_iii, plot_D = plot_D))
 }
 
-# Check if required metadata columns exist, if not, calculate scores
 if (!all(c("Mesenchymal1", "Epithelial1", "Basal1", "Luminal1") %in% colnames(seurat_gse173634@meta.data))) {
   seurat_gse173634 <- calculate_scores_manual(seurat_gse173634)
 }
