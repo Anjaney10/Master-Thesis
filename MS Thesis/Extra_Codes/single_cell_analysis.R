@@ -65,7 +65,7 @@ glimpse(merged_seurat_object)
 
 view(merged_seurat_object@meta.data)
 
-options(future.globals.maxSize = 2 * 1024^3)  # 2 GiB
+options(future.globals.maxSize = 2 * 1024^3)
 
 merged_seurat_object <- SCTransform(merged_seurat_object, verbose = FALSE)
 
@@ -146,27 +146,27 @@ data_Basal_like <- subset(data_req, cancer_type == "Basal_like")
 prcnt_data_luminal_A <- data_luminal_A %>%
   group_by(cell_type) %>%
   summarize(count = n()) %>%
-  mutate(percentage = count / sum(count) * 100)  # Calculate the percentage
+  mutate(percentage = count / sum(count) * 100) 
 
 prcnt_data_luminal_B <- data_luminal_B %>%
   group_by(cell_type) %>%
   summarize(count = n()) %>%
-  mutate(percentage = count / sum(count) * 100)  # Calculate the percentage
+  mutate(percentage = count / sum(count) * 100) 
 
 prcnt_data_TNBC_A <- data_TNBC_A %>%
   group_by(cell_type) %>%
   summarize(count = n()) %>%
-  mutate(percentage = count / sum(count) * 100)  # Calculate the percentage
+  mutate(percentage = count / sum(count) * 100) 
 
 prcnt_data_TNBC_B <- data_TNBC_B %>%
   group_by(cell_type) %>%
   summarize(count = n()) %>%
-  mutate(percentage = count / sum(count) * 100)  # Calculate the percentage
+  mutate(percentage = count / sum(count) * 100) 
 
 prcnt_data_HER2_pos <- data_HER2_pos %>%
   group_by(cell_type) %>%
   summarize(count = n()) %>%
-  mutate(percentage = count / sum(count) * 100)  # Calculate the percentage
+  mutate(percentage = count / sum(count) * 100) 
 
 prcnt_data_Basal_like <- data_Basal_like %>%
   group_by(cell_type) %>%
@@ -186,7 +186,7 @@ combined_prcnt_data <- bind_rows(
 ggplot(combined_prcnt_data, aes(x = cancer_type, y = percentage, fill = cell_type)) +
   geom_bar(stat = "identity", position = "stack") +
   labs(title = "Percentage Composition of Cell Types in Different Cancer Types", x = "Cancer Type", y = "Percentage") +
-  scale_fill_brewer(palette = "Set3") +  # Optional: Add a color palette
+  scale_fill_brewer(palette = "Set3") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
   
@@ -195,12 +195,12 @@ ggsave("figA_ii.png", width = 6, height = 4, dpi = 300)
 ############################################################## plot D1 ###########################################################################
 
 
-gene_set_path <- "/home/csb/Ritesh/data/gene_sets/gene_sets_related_RPMS_BPMS.gmt"
+gene_set_path <- "./data/gene_sets/gene_sets_related_RPMS_BPMS.gmt"
 gene_sets <- load_AUCell_genesets(gene_set_path)
 gene_set_file <- read_tsv(gene_set_path, col_names = FALSE)
 view(gene_set_file)
 
-gmtFile <- "/home/csb/Ritesh/data/gene_sets/gene_sets_related_RPMS_BPMS.gmt"
+gmtFile <- "./data/gene_sets/gene_sets_related_RPMS_BPMS.gmt"
 geneSets <- getGmt(gmtFile)
 class(geneSets)
 
@@ -235,7 +235,7 @@ str(cells_AUC)
 
 AUC_score_table <- cells_AUC@assays@data$AUC
 AUC_score_table <- data.frame(AUC_score_table)
-#sort the data frame alphabatecallt by the cell names
+#sort the data frame alphabetically by the cell names
 AUC_score_table <- AUC_score_table[, order(colnames(AUC_score_table))]
 view(AUC_score_table)
 
@@ -288,10 +288,5 @@ for (col in colnames(exp_mat)) {
   print("BPMS_done")
 }
 
-
 view(as.numeric(AUC_score_table["FAO", ]))
 view(RKIP_data)
-
-print(sum(is.na(AUC_score_table["FAO", ])))  # Number of NA values in the column
-print(sum(is.nan(AUC_score_table["FAO", ]))) # Number of NaN values
-print(sum(is.infinite(AUC_score_table["FAO", ]))) # Number of Inf values
