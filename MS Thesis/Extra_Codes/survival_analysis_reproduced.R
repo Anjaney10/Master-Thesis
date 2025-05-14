@@ -25,18 +25,11 @@ genesets <- list(
 )
 
 perform_ssgsea <- function(expression_file, genesets) {
-    # Read data with Gene as rownames
     expression_data <- read.table(expression_file, header = TRUE, sep = "\t", 
                                 stringsAsFactors = FALSE)
-    
-    # Handle duplicate genes by keeping the first occurrence
     expression_data <- expression_data[!duplicated(expression_data$Gene), ]
-    
-    # Set Gene column as rownames and remove it from the data
     rownames(expression_data) <- expression_data$Gene
     expression_data <- expression_data[, -1]
-    
-    # Convert to matrix
     expression_matrix <- as.matrix(expression_data)
     
     # Perform ssGSEA
@@ -52,10 +45,10 @@ perform_ssgsea <- function(expression_file, genesets) {
 }
 
 for (cancer in cancer_types) {
-    expression_file <- paste0("/home/csb/Anjaney/Transcriptomics/TCGA_DATA/TCGA-", cancer, ".star_tpm.tsv")
+    expression_file <- paste0("./Transcriptomics/TCGA_DATA/TCGA-", cancer, ".star_tpm.tsv")
     ssgsea_results <- perform_ssgsea(expression_file, genesets)
     
-    ssgsea_results_file <- paste0("/home/csb/Anjaney/Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
+    ssgsea_results_file <- paste0("./Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
     write.table(ssgsea_results, file = ssgsea_results_file, sep = "\t", col.names = NA, quote = FALSE)
 }
 
@@ -67,7 +60,7 @@ transpose_and_replace <- function(file) {
 }
 
 for (cancer in cancer_types) {
-    ssgsea_results_file <- paste0("/home/csb/Anjaney/Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
+    ssgsea_results_file <- paste0("./Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
     transpose_and_replace(ssgsea_results_file)
 }
 
@@ -88,18 +81,18 @@ add_type_column <- function(file) {
 }
 
 for (cancer in cancer_types) {
-    ssgsea_results_file <- paste0("/home/csb/Anjaney/Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
+    ssgsea_results_file <- paste0("./Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
     add_type_column(ssgsea_results_file)
 }
 
 # Function to read and merge survival and ssGSEA data
 merge_survival_ssgsea <- function(cancer) {
     # Read survival data
-    survival_file <- paste0("/home/csb/Anjaney/Transcriptomics/TCGA_DATA/survival_data/TCGA-", cancer, ".survival.tsv")
+    survival_file <- paste0("./Transcriptomics/TCGA_DATA/survival_data/TCGA-", cancer, ".survival.tsv")
     survival_data <- read.table(survival_file, header = TRUE, sep = "\t")
     
     # Read ssGSEA results
-    ssgsea_file <- paste0("/home/csb/Anjaney/Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
+    ssgsea_file <- paste0("./Transcriptomics/srinath_2022/ssgsea_tpm_results/TCGA-", cancer, "_ssgsea_results.tsv")
     ssgsea_data <- read.table(ssgsea_file, header = TRUE, sep = "\t", row.names = 1)
     
     # Add sample IDs as column
@@ -214,11 +207,11 @@ library(ggplot2)
 library(tidyr)
 
 # Read the Excel sheets
-emt_data <- read_excel("/home/csb/Anjaney/Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
+emt_data <- read_excel("./Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
                        sheet = "EMT_Fig 7A", skip = 1)
-glyco_data <- read_excel("/home/csb/Anjaney/Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
+glyco_data <- read_excel("./Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
                         sheet = "Glyco_Fig 7A", skip = 1)
-oxphos_data <- read_excel("/home/csb/Anjaney/Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
+oxphos_data <- read_excel("./Transcriptomics/srinath_2022/Biomolecules/Supplementary Table S3.xlsx", 
                          sheet = "OXPHOS_Fig 7A", skip = 1)
 
 # Add signature column to each dataset
@@ -250,7 +243,7 @@ ggplot(filtered_combined_data, aes(x = `Cancer Type`, y = `Hazard Ratio`)) +
         panel.spacing = unit(1, "cm"))
 
 # Save the plot
-ggsave("/home/csb/Anjaney/Transcriptomics/srinath_2022/survival_plots/Original_HR_Plot.png",
+ggsave("./Transcriptomics/srinath_2022/survival_plots/Original_HR_Plot.png",
        width = 12, height = 18, dpi = 300, bg = "white")
    
 
@@ -411,7 +404,7 @@ ggplot(filtered_cox_results, aes(x = cancer_type, y = log2(estimate))) +
         panel.spacing = unit(1, "cm"))
 
 # Save the plot with adjusted dimensions for vertical layout
-ggsave(filename = "/home/csb/Anjaney/Transcriptomics/srinath_2022/survival_plots/TCGA_Metabolic_Signatures.png",
+ggsave(filename = "./Transcriptomics/srinath_2022/survival_plots/TCGA_Metabolic_Signatures.png",
        plot = last_plot(),
        width = 12,    # Adjust width as needed
        height = 18,   # Increase height to accommodate vertical panels
@@ -612,7 +605,7 @@ final_heatmap <- pheatmap(-log2(value_matrix),
      fontsize_col = 22)
 
 # Save the heatmap
-ggsave("/home/csb/Anjaney/Transcriptomics/srinath_2022/survival_plots/Final_Heatmap.png",
+ggsave("./Transcriptomics/srinath_2022/survival_plots/Final_Heatmap.png",
        plot = final_heatmap,
        width = 12, height = 18, dpi = 300, bg = "white")
 
@@ -789,7 +782,7 @@ heatmap_plot <- pheatmap(value_matrix,
          labels_col = type_order)
 
 # Save the heatmap
-png("/home/csb/Anjaney/Transcriptomics/srinath_2022/survival_plots/Heatmap.png",
+png("./Transcriptomics/srinath_2022/survival_plots/Heatmap.png",
     width = 12*300,  # multiply by dpi
     height = 16*300,
     res = 300)
@@ -895,7 +888,7 @@ pheatmap(value_matrix,
          na_col = "grey")  # Color for NA values
 
 # Save the heatmap
-png("/home/csb/Anjaney/Transcriptomics/srinath_2022/survival_plots/Heatmap_penalized.png",
+png("./Transcriptomics/srinath_2022/survival_plots/Heatmap_penalized.png",
     width = 12*300,
     height = 16*300,
     res = 300)
