@@ -24,7 +24,7 @@ Read10X_uncompressed <- function(data.dir) {
 }
 
 # Create Seurat object for GSE176078
-data_dir_gse176078 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE176078_RAW/"
+data_dir_gse176078 <- "./Transcriptomics/Sarthak_2024/GSE176078_RAW/"
 subfolders_gse176078 <- list.dirs(data_dir_gse176078, full.names = TRUE, recursive = FALSE)
 
 seurat_list_gse176078 <- lapply(subfolders_gse176078, function(folder) {
@@ -35,7 +35,7 @@ seurat_list_gse176078 <- lapply(subfolders_gse176078, function(folder) {
 seurat_gse176078 <- merge(seurat_list_gse176078[[1]], y = seurat_list_gse176078[-1], add.cell.ids = basename(subfolders_gse176078))
 
 # Create Seurat object for GSE173634
-data_dir_gse173634 <- "/home/csb/Anjaney/Transcriptomics/Sarthak_2024/GSE173634_RAW/"
+data_dir_gse173634 <- "./Transcriptomics/Sarthak_2024/GSE173634_RAW/"
 data_gse173634 <- Read10X_uncompressed(data.dir = data_dir_gse173634)
 seurat_gse173634 <- CreateSeuratObject(counts = data_gse173634)
 
